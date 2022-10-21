@@ -20,7 +20,7 @@ for k,v in pairs(ltbl[args[2]]) do
         print("Did you mean "..k.." (y/n)")
         local r = string.lower(read())
         if r == "y" then
-            if args[2] == "text"
+            if args[2] == "text" then
                 res = assert(http.get(v), "Failed to download book, perhaps you don't have internet?")
             else
                 res = assert(http.get(v,nil,true), "Failed to download book, perhaps you don't have internet?")
