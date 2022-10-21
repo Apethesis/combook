@@ -1,0 +1,6 @@
+{
+  audio = {},
+  text = {
+    [ "Programming in Lua 1 (First Edition)" ] = "https://github.com/Apethesis/combook/raw/main/files/text/PiL1.txt",
+  },
+}

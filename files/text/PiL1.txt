@@ -1,0 +1,186 @@
+1 - Getting Started
+To keep with the tradition, our first program in Lua just prints "Hello World":
+print("Hello World")
+If you are using the stand-alone Lua interpreter, all you have to do to run your first program is to
+call the interpreter (usually named lua) with the name of the text file that contains your program.
+For instance, if you write the above program in a file hello.lua, the following command should
+run it:
+prompt> lua hello.lua
+As a slightly more complex example, the following program defines a function to compute the
+factorial of a given number, asks the user for a number, and prints its factorial:
+-- defines a factorial function
+function fact (n)
+if n == 0 then
+return 1
+else
+return n * fact(n-1)
+end
+end
+print("enter a number:")
+a = io.read("*number") -- read a number
+print(fact(a))
+If you are using Lua embedded in an application, such as CGILua or IUPLua, you may need to refer
+to the application manual (or to a "local guru") to learn how to run your programs. Nevertheless,
+Lua is still the same language; most things that we will see here are valid regardless of how you are
+using Lua. For a start, we recommend that you use the stand-alone interpreter (that is, the lua
+executable) to run your first examples and experiments.
+1.1 - Chunks
+Each piece of code that Lua executes, such as a file or a single line in interactive mode, is a chunk.
+More specifically, a chunk is simply a sequence of statements.
+A semicolon may optionally follow any statement. Usually, I use semicolons only to separate two or
+more statements written in the same line, but this is just a convention. Line breaks play no role in
+Lua's syntax; for instance, the following four chunks are all valid and equivalent:
+a = 1
+b = a*2
+a = 1;
+b = a*2;
+a = 1 ; b = a*2
+a = 1 b = a*2 -- ugly, but valid
+A chunk may be as simple as a single statement, such as in the "hello world" example, or it may be
+composed of a mix of statements and function definitions (which are assignments actually, as we
+will see later), such as the factorial example. A chunk may be as large as you wish. Because Lua is
+used also as a data-description language, chunks with several megabytes are not uncommon. The
+Lua interpreter has no problems at all with large sizes.
+Instead of writing your program to a file, you may run the stand-alone interpreter in interactive
+mode. If you call Lua without any arguments, you will get its prompt:
+Lua 5.0 Copyright (C) 1994-2003 Tecgraf, PUC-Rio
+>
+Thereafter, each command that you type (such as print "Hello World") executes
+immediately after you press <enter>. To exit the interactive mode and the interpreter, just type
+end-of-file (ctrl-D in Unix, ctrl-Z in DOS/Windows), or call the exit function, from the
+Operating System library (you have to type os.exit()<enter>).
+In interactive mode, Lua usually interprets each line that you type as a complete chunk. However, if
+it detects that the line cannot form a complete chunk, it waits for more input, until it has a complete
+chunk. When Lua is waiting for a line continuation, it shows a different prompt (typically >>).
+Therefore, you can enter a multi-line definition, such as the factorial function, directly in
+interactive mode. Sometimes, however, it is more convenient to put such definitions in a file, and
+then call Lua to run that file.
+You can execute a sequence of chunks by giving them all as arguments to the stand-alone
+interpreter, with the -l option. For instance, if you have a file a with a single statement x=1 and
+another file b with the statement print(x), the command line
+prompt> lua -la -lb
+will run the chunk in a, then the one in b, which will print the expected 1. (The -l option actually
+calls require, which looks for the files in a specific path. So, the previous example will not work
+if this path does not include the current directory. We will discuss the require function in more
+details in Section 8.1.)
+You may use the -i option to instruct Lua to start an interactive session after running the given
+chunks. A command line like
+prompt> lua -i -la -lb
+will run the chunk in a, then the one in b, and then prompt you for interaction. This is especially
+useful for debugging and manual testing. At the end of this chapter we will see other options for the
+stand-alone interpreter.
+Another way to link chunks is with the dofile function, which immediately executes a file. For
+instance, you may have a file lib1.lua:
+-- file 'lib1.lua'
+function norm (x, y)
+local n2 = x^2 + y^2
+return math.sqrt(n2)
+end
+function twice (x)
+return 2*x
+end
+Then, in interactive mode, you can type
+> dofile("lib1.lua") -- load your library
+> n = norm(3.4, 1.0)
+> print(twice(n)) --> 7.0880180586677
+The dofile function is useful also when you are testing a piece of code. You can work with two
+windows: One of them is a text editor with your program (in a file prog.lua, say) and the other is
+a console running Lua in interactive mode. After saving a modification that you make to your
+program, you execute dofile("prog.lua") in the Lua console to load the new code; then you
+can exercise the new code, calling its functions and printing the results.
+1.2 - Global Variables
+Global variables do not need declarations. You simply assign a value to a global variable to create it.
+It is not an error to access a non-initialized variable; you just get the special value nil as the result:
+print(b) --> nil
+b = 10
+print(b) --> 10
+Usually you do not need to delete global variables; if your variable is going to have a short life, you
+should use a local variable. But, if you need to delete a global variable, just assign nil to it:
+b = nil
+print(b) --> nil
+After that, it is as if the variable had never been used. In other words, a global variable is existent if
+(and only if) it has a non-nil value.
+1.3 - Some Lexical Conventions
+Identifiers in Lua can be any string of letters, digits, and underscores, not beginning with a digit; for
+instance
+i j i10 _ij
+aSomewhatLongName _INPUT
+You should avoid identifiers starting with an underscore followed by one or more uppercase letters
+(e.g., _VERSION); they are reserved for special uses in Lua. Usually, I reserve the identifier _ (a
+single underscore) for a dummy variable.
+In Lua, the concept of what is a letter is locale dependent. Therefore, with a proper locale, you can
+use variable names such as índice or ação. However, such names will make your program
+unsuitable to run in systems that do not support that locale.
+The following words are reserved; we cannot use them as identifiers:
+and break do else elseif
+end false for function if
+in local nil not or
+repeat return then true until
+while
+Lua is case-sensitive: and is a reserved word, but And and AND are two other different identifiers.
+A comment starts anywhere with a double hyphen (--) and runs until the end of the line. Lua also
+offers block comments, which start with --[[ and run until the corresponding ]]. A common
+trick, when we want to comment out a piece of code, is to write the following:
+--[[
+print(10) -- no action (comment)
+--]]
+Now, if we add a single hyphen to the first line, the code is in again:
+---[[
+print(10) --> 10
+--]]
+In the first example, the -- in the last line is still inside the block comment. In the second example,
+the sequence ---[[ does not start a block comment; so, the print is outside comments. In this
+case, the last line becomes an independent comment, as it starts with --.
+1.4 - The Stand-Alone Interpreter
+The stand-alone interpreter (also called lua.c due to its source file, or simply lua due to its
+executable) is a small program that allows the direct use of Lua. This section presents its main
+options.
+When the interpreter loads a file, it ignores its first line if that line starts with a number sign (`# ́).
+That feature allows the use of Lua as a script interpreter in Unix systems. If you start your program
+with something like
+#!/usr/local/bin/lua
+(assuming that the stand-alone interpreter is located at /usr/local/bin), or
+#!/usr/bin/env lua
+then you can call the program directly, without explicitly calling the Lua interpreter.
+The usage of lua is
+lua [options] [script [args]]
+Everything is optional. As we have seen already, when we call lua without arguments the
+interpreter enters in interactive mode.
+The -e option allows us to enter code directly into the command line. For instance,
+prompt> lua -e "print(math.sin(12))" --> -0.53657291800043
+(Unix needs the double quotes to stop the shell from interpreting the parentheses.) As we previously
+saw, -l loads a file and -i enters interactive mode after running the other arguments. So, for
+instance, the call
+prompt> lua -i -l a.lua -e "x = 10"
+will load the file a.lua, then execute the assignment x = 10, and finally present a prompt for
+interaction.
+Whenever the global variable _PROMPT is defined, lua uses its value as the prompt when
+interacting. So, you can change the prompt with a call like this:
+prompt> lua -i -e "_PROMPT=' lua> '"
+lua>
+We are assuming that "prompt" is the system's prompt. In the example, the outer quotes stop the
+shell from interpreting the inner quotes, which are interpreted by Lua. More exactly, Lua receives
+the following command to run:
+_PROMPT=' lua> '
+which assigns the string " lua> " to the global variable _PROMPT.
+Before it starts running arguments, lua looks for an environment variable called LUA_INIT. If
+there is such a variable and its content is @filename, then lua loads the given file. If LUA_INIT is
+defined but does not start with `@ ́, then lua assumes that it contains Lua code and runs it. This
+variable gives you great power when configuring the stand-alone interpreter, because you have the
+full power of Lua in the configuration. You can pre-load packages, change the prompt and the path,
+define your own functions, rename or delete functions, and so on.
+A main script can retrieve its arguments in the global variable arg. In a call like
+prompt> lua script a b c
+lua creates the table arg with all the command-line arguments, before running the script. The
+script name goes into index 0; its first argument (a in the example), goes to index 1, and so on.
+Eventual options go to negative indices, as they appear before the script. For instance, in the call
+prompt> lua -e "sin=math.sin" script a b
+lua collects the arguments as follows:
+arg[-3] = "lua"
+arg[-2] = "-e"
+arg[-1] = "sin=math.sin"
+arg[0] = "script"
+arg[1] = "a"
+arg[2] = "b"
+More often than not, the script only uses the positive indices (arg[1] and arg[2], in the
+example).
